@@ -1,0 +1,16 @@
+{
+  "regime_values": {
+    "vix": 18.2,
+    "skew": 132,
+    "move": 89,
+    "trin": 1.1
+  },
+  "regime_signals": {
+    "advDecLine": 1.4,
+    "newHighsLows": 0.72
+  },
+  "industry_rotation": [
+    { "industry": "Technology", "relativeStrength6w": 0.12 },
+    { "industry": "Energy", "relativeStrength6w": -0.08 }
+  ]
+}

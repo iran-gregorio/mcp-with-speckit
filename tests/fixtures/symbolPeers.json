@@ -1,0 +1,18 @@
+{
+  "symbol": "AAPL",
+  "sector": "Information Technology",
+  "subIndustry": "Technology Hardware",
+  "valuationPercentile": {
+    "pe": 72,
+    "ps": 81,
+    "pb": 95
+  },
+  "profitabilityPercentile": {
+    "roic": 88,
+    "roe": 92
+  },
+  "performancePercentile": {
+    "1y": 79
+  },
+  "topPeersByRS": ["MSFT", "NVDA", "AVGO", "QCOM", "AMD"]
+}
