@@ -174,6 +174,24 @@ JSON com campos `regime_values`, `regime_signals`, `industry_rotation`.
 
 ---
 
+## Phase 7: Authentication (TOKEN_SERVICE)
+
+**Purpose**: Implement mandatory presence-only validation for the `TOKEN_SERVICE` environment variable at server startup (FR-010).
+
+- [x] T040 [P] Write unit tests for `TOKEN_SERVICE` validation in `tests/unit/tokenValidation.test.ts`:
+  - Spawn `tsx src/index.ts` without `TOKEN_SERVICE`, assert exit code 1 and error message in stderr
+  - Spawn with `TOKEN_SERVICE=""`, assert exit code 1 and error message
+  - Spawn with `TOKEN_SERVICE="test"`, assert startup succeeds
+- [x] T041 Modify `src/index.ts` to validate `process.env.TOKEN_SERVICE`:
+  - Read, trim, and check if empty
+  - Write error to `process.stderr` and `process.exit(1)` if missing/empty
+  - MUST occur before any MCP/Valueray initialization
+- [x] T042 Verify T040 tests now PASS
+
+**Checkpoint**: `TOKEN_SERVICE=test npm run dev` starts successfully. `npm run dev` alone fails with a clear error message.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -184,12 +202,14 @@ JSON com campos `regime_values`, `regime_signals`, `industry_rotation`.
 - **Phase 4 (US2)**: Depends on Phase 2 — can run in parallel with US1 after Phase 2
 - **Phase 5 (US3)**: Depends on Phase 2 — can run in parallel with US1/US2 after Phase 2
 - **Phase 6 (Polish)**: Depends on Phases 3–5
+- **Phase 7 (Authentication)**: Depends on Phase 2 (or any phase after). Can be implemented independently.
 
 ### User Story Dependencies
 
 - **US1 (P1)**: Only depends on Foundational (Phase 2) — no cross-story deps
 - **US2 (P2)**: Only depends on Foundational (Phase 2) — independently testable
 - **US3 (P3)**: Only depends on Foundational (Phase 2) — independently testable
+- **FR-010 (Auth)**: Authentication is a global requirement.
 
 ### Within Each Story
 
@@ -206,6 +226,7 @@ JSON com campos `regime_values`, `regime_signals`, `industry_rotation`.
 - T026, T027 — US3 test files
 - T034, T035, T036, T037, T038, T039 — Polish tasks (different files)
 - US1, US2, US3 phases — all three can be implemented simultaneously by different developers after Phase 2
+- T040 — write tests while T041 is started
 
 ---
 
@@ -262,6 +283,7 @@ T019 — npm test (all green)
 3. Phase 4 → `get_asset_peers` added
 4. Phase 5 → `get_market_regime` added
 5. Phase 6 → prompt + polish + all tests green
+6. Phase 7 → mandatory `TOKEN_SERVICE` validation added
 
 ---
 

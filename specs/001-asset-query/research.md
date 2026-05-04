@@ -167,3 +167,35 @@ Use **Vitest** for all tests (unit + integration).
 | MCP SDK version to use | v1.29.0 (stable) |
 | Test framework | Vitest |
 | Node version | Node 20 LTS |
+| Server access control | TOKEN_SERVICE env var — presence-only validation (FR-010) |
+
+---
+
+## 6. TOKEN_SERVICE Authentication (FR-010)
+
+### Decision
+Require a mandatory `TOKEN_SERVICE` environment variable at server startup.
+Validation is **presence-only** — the server checks that the variable exists and
+is non-empty but does NOT validate format, cryptographic properties, or authenticate
+against any external service.
+
+### Implementation approach
+- Validate in `src/index.ts` immediately after `dotenv/config` loads, before any
+  MCP infrastructure is constructed
+- On failure: write descriptive error to `stderr` and `process.exit(1)`
+- The variable is a secret — NOT included in the tracked `.env` file
+- Operators configure it in the MCP client settings (e.g., `claude_desktop_config.json`
+  `env` section)
+
+### Rationale
+- **Startup guard** is the simplest correct pattern for mandatory configuration
+- Validating at entrypoint (not server factory) keeps `createMcpServer()` testable
+  without environment side-effects
+- Presence-only validation is sufficient for v1 — future iterations can add token
+  verification against an auth service
+
+### Alternatives considered
+- **Validate in server factory**: Rejected — mixes deployment config with business logic
+- **Validate per-request**: Rejected — wasteful to check on every tool call when the
+  value never changes during a session
+- **Full token verification**: Deferred — spec explicitly says "somente a existência"
