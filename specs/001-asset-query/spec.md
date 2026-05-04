@@ -96,6 +96,11 @@ e recebe o JSON completo do endpoint `/marketRegime` da Valueray API, contendo
 - O que acontece quando `get_asset_peers` é chamado com um ETF? O servidor retorna o
   JSON da API como vier (passthrough), sem detecção especial de tipo de ativo. Pode
   resultar em lista de peers vazia — o cliente MCP interpreta o resultado.
+- O que acontece quando a variável de ambiente `TOKEN_SERVICE` não está configurada?
+  O servidor DEVE recusar a inicialização e exibir uma mensagem de erro clara
+  informando que a chave de acesso é obrigatória.
+- O que acontece quando `TOKEN_SERVICE` está definida com valor vazio? O servidor
+  DEVE tratar como ausente e recusar a inicialização.
 
 ## Requirements *(mandatory)*
 
@@ -125,6 +130,12 @@ e recebe o JSON completo do endpoint `/marketRegime` da Valueray API, contendo
 - **FR-009**: A base URL da Valueray API DEVE ser configurável via variável de ambiente
   `VALUERAY_BASE_URL`, com fallback hardcoded para `https://www.valueray.com/api/v1`.
   Um arquivo `.env` DEVE ser incluído no repositório com o valor padrão pré-configurado.
+- **FR-010**: O MCP server DEVE exigir uma chave de acesso configurada via variável de
+  ambiente `TOKEN_SERVICE`. No momento da inicialização do servidor, o sistema DEVE
+  validar a existência (presença e valor não-vazio) dessa variável. Caso a variável
+  não esteja definida ou esteja vazia, o servidor DEVE recusar a inicialização e
+  encerrar com uma mensagem de erro clara indicando que a chave é obrigatória. Nesta
+  versão, apenas a presença da chave é validada — o conteúdo/formato não é verificado.
 
 ### Key Entities
 
@@ -154,9 +165,11 @@ e recebe o JSON completo do endpoint `/marketRegime` da Valueray API, contendo
 - **SC-003**: 100% das chamadas com símbolos inválidos ou quando a API retorna erro
   resultam em mensagem de erro descritiva (não em falha silenciosa ou crash do servidor).
 - **SC-004**: O MCP server inicia com sucesso localmente em menos de 10 segundos após
-  o comando de inicialização.
+  o comando de inicialização, quando `TOKEN_SERVICE` está configurada.
 - **SC-005**: O prompt de exemplo registrado no servidor é listado e utilizável por
   clientes MCP compatíveis (ex.: Claude Desktop, outros clientes MCP).
+- **SC-006**: O MCP server recusa inicialização e encerra com mensagem de erro clara
+  quando a variável de ambiente `TOKEN_SERVICE` não está definida ou está vazia.
 
 ## Assumptions
 
@@ -176,6 +189,11 @@ e recebe o JSON completo do endpoint `/marketRegime` da Valueray API, contendo
 - Os campos de resposta da Valueray API são passados diretamente ao cliente MCP
   (passthrough), sem mapeamento ou curadoria de campos. Apenas `disclaimer` e
   `field_explanations` são removidos de cada resposta antes da entrega.
+- A variável `TOKEN_SERVICE` é obrigatória na configuração do servidor MCP pelo cliente.
+  Nesta versão, apenas a presença (existência e não-vazio) da chave é validada — não
+  há verificação de formato, validade ou autenticação contra um serviço externo.
+- O valor de `TOKEN_SERVICE` NÃO é incluído no arquivo `.env` do repositório por ser
+  um segredo; cada operador fornece seu próprio valor na configuração do cliente MCP.
 
 ## Clarifications
 
@@ -186,3 +204,9 @@ e recebe o JSON completo do endpoint `/marketRegime` da Valueray API, contendo
 - Q: Comportamento de `get_asset_peers` com ETF? → A: Passthrough puro — retorna o JSON da API como vier, sem tratamento especial ou detecção de tipo de ativo.
 - Q: A tool `get_market_regime` aceita parâmetros de filtro? → A: Não — sem parâmetros, passthrough total do endpoint `/marketRegime` (campos: `regime_values`, `regime_signals`, `industry_rotation`).
 - Q: O prompt de exemplo deve chamar qual combinação de tools? → A: As 3 tools em sequência — `get_asset_data` → `get_asset_peers` → `get_market_regime` para análise completa.
+
+### Session 2026-05-04
+
+- Q: O servidor exige autenticação? → A: Sim. O cliente que configura o MCP server deve obrigatoriamente informar uma chave de acesso via variável de ambiente `TOKEN_SERVICE`. No momento da inicialização, o servidor valida somente a existência (presença e não-vazio) dessa variável — não valida formato nem autenticidade do token.
+- Q: O que acontece se `TOKEN_SERVICE` não for informada? → A: O servidor recusa a inicialização e encerra com mensagem de erro clara.
+- Q: O `TOKEN_SERVICE` deve ser incluído no `.env`? → A: Não — é um segredo. O operador configura na seção de environment do cliente MCP (ex.: `claude_desktop_config.json`).
