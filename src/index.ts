@@ -3,6 +3,17 @@
 // Run with: node dist/index.js  or  tsx src/index.ts
 
 import 'dotenv/config';
+
+// FR-010: Validate TOKEN_SERVICE presence at startup
+const token = process.env.TOKEN_SERVICE?.trim();
+if (!token) {
+  process.stderr.write(
+    'ERROR: TOKEN_SERVICE environment variable is required but not set.\n' +
+    'Configure it in your MCP client settings (e.g., claude_desktop_config.json).\n'
+  );
+  process.exit(1);
+}
+
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { ValuerayClient } from './infrastructure/valuerayClient.js';
 import { AssetService } from './application/assetService.js';
